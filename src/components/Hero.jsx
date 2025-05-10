@@ -12,12 +12,22 @@ gsap.registerPlugin(ScrollTrigger);
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(1);
   const [hasClicked, setHasClicked] = useState(false);
-
   const [loading, setLoading] = useState(true);
   const [loadedVideos, setLoadedVideos] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const totalVideos = 4;
+  const totalVideos = isMobile ? 1 : 4; // Only load one video on mobile
   const nextVdRef = useRef(null);
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleVideoLoad = () => {
     setLoadedVideos((prev) => prev + 1);
@@ -27,17 +37,17 @@ const Hero = () => {
     if (loadedVideos === totalVideos - 1) {
       setLoading(false);
     }
-  }, [loadedVideos]);
+  }, [loadedVideos, totalVideos]);
 
   const handleMiniVdClick = () => {
+    if (isMobile) return; // Disable click interaction on mobile
     setHasClicked(true);
-
     setCurrentIndex((prevIndex) => (prevIndex % totalVideos) + 1);
   };
 
   useGSAP(
     () => {
-      if (hasClicked) {
+      if (hasClicked && !isMobile) {
         gsap.set("#next-video", { visibility: "visible" });
         gsap.to("#next-video", {
           transformOrigin: "center center",
@@ -46,7 +56,7 @@ const Hero = () => {
           height: "100%",
           duration: 1,
           ease: "power1.inOut",
-          onStart: () => nextVdRef.current.play(),
+          onStart: () => nextVdRef.current?.play(),
         });
         gsap.from("#current-video", {
           transformOrigin: "center center",
@@ -57,35 +67,37 @@ const Hero = () => {
       }
     },
     {
-      dependencies: [currentIndex],
+      dependencies: [currentIndex, isMobile],
       revertOnUpdate: true,
     }
   );
 
   useGSAP(() => {
-    gsap.set("#video-frame", {
-      clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
-      borderRadius: "0% 0% 40% 10%",
-    });
-    gsap.from("#video-frame", {
-      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      borderRadius: "0% 0% 0% 0%",
-      ease: "power1.inOut",
-      scrollTrigger: {
-        trigger: "#video-frame",
-        start: "center center",
-        end: "bottom center",
-        scrub: true,
-      },
-    });
-  });
+    if (!isMobile) {
+      gsap.set("#video-frame", {
+        clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
+        borderRadius: "0% 0% 40% 10%",
+      });
+      gsap.from("#video-frame", {
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        borderRadius: "0% 0% 0% 0%",
+        ease: "power1.inOut",
+        scrollTrigger: {
+          trigger: "#video-frame",
+          start: "center center",
+          end: "bottom center",
+          scrub: true,
+        },
+      });
+    }
+  }, [isMobile]);
 
   const getVideoSrc = (index) => `videos/hero-${index}.mp4`;
 
   return (
-    <div className="relative h-dvh w-screen overflow-x-hidden">
+    <div className="relative h-[100dvh] w-screen overflow-x-hidden">
       {loading && (
-        <div className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden bg-white">
+        <div className="flex-center absolute z-[100] h-[100dvh] w-screen overflow-hidden bg-white">
           {/* https://uiverse.io/G4b413l/tidy-walrus-92 */}
           <div className="three-body">
             <div className="three-body__dot"></div>
@@ -97,45 +109,47 @@ const Hero = () => {
 
       <div
         id="video-frame"
-        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
+        className="relative z-10 h-[100dvh] w-screen overflow-hidden rounded-lg bg-blue-75"
       >
         <div>
-          <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
-            <VideoPreview>
-              <div
-                onClick={handleMiniVdClick}
-                className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
-              >
-                <video
-                  ref={nextVdRef}
-                  src={getVideoSrc((currentIndex % totalVideos) + 1)}
-                  loop
-                  muted
-                  id="current-video"
-                  className="size-64 origin-center scale-150 object-cover object-center"
-                  onLoadedData={handleVideoLoad}
-                />
-              </div>
-            </VideoPreview>
-          </div>
+          {!isMobile && (
+            <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
+              <VideoPreview>
+                <div
+                  onClick={handleMiniVdClick}
+                  className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
+                >
+                  <video
+                    ref={nextVdRef}
+                    src={getVideoSrc((currentIndex % totalVideos) + 1)}
+                    loop
+                    muted
+                    id="current-video"
+                    className="size-64 origin-center scale-150 object-cover object-center"
+                    onLoadedData={handleVideoLoad}
+                  />
+                </div>
+              </VideoPreview>
+            </div>
+          )}
 
+          {!isMobile && (
+            <video
+              ref={nextVdRef}
+              src={getVideoSrc(currentIndex)}
+              loop
+              muted
+              id="next-video"
+              className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
+              onLoadedData={handleVideoLoad}
+            />
+          )}
           <video
-            ref={nextVdRef}
-            src={getVideoSrc(currentIndex)}
-            loop
-            muted
-            id="next-video"
-            className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-            onLoadedData={handleVideoLoad}
-          />
-          <video
-            // src={getVideoSrc(
-            //   currentIndex === totalVideos - 1 ? 1 : currentIndex
-            // )}
             src="videos/trading-bg.mp4"
             autoPlay
             loop
             muted
+            playsInline // Add playsInline for better mobile support
             className="absolute left-0 top-0 size-full object-cover object-center"
             onLoadedData={handleVideoLoad}
           />
