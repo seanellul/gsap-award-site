@@ -1,5 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TiLocationArrow } from "react-icons/ti";
+import Scroller from "./scroller";
+import gsap from "gsap";
+import React from "react";
 
 export const BentoTilt = ({ children, className = "" }) => {
   const [transformStyle, setTransformStyle] = useState("");
@@ -38,10 +41,11 @@ export const BentoTilt = ({ children, className = "" }) => {
   );
 };
 
-export const BentoCard = ({ src, title, description, isComingSoon }) => {
+export const BentoCard = ({ src, title, description, isComingSoon, isImage = false }) => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [hoverOpacity, setHoverOpacity] = useState(0);
   const hoverButtonRef = useRef(null);
+  const contentRef = useRef(null);
 
   const handleMouseMove = (event) => {
     if (!hoverButtonRef.current) return;
@@ -56,15 +60,101 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
   const handleMouseEnter = () => setHoverOpacity(1);
   const handleMouseLeave = () => setHoverOpacity(0);
 
+  useEffect(() => {
+    if (isImage && contentRef.current) {
+      // Extract the actual text content from the title JSX element
+      const titleText = React.Children.toArray(title.props.children)
+        .map(child => {
+          if (typeof child === 'string') return child;
+          if (child.props && child.props.children) return child.props.children;
+          return '';
+        })
+        .join('')
+        .trim();
+
+      console.log('Title text:', titleText); // Debug log
+
+      // Create a hash from the title to generate consistent but different values for each card
+      const titleHash = titleText.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      
+      console.log('Title hash:', titleHash); // Debug log
+      
+      // Generate unique animation parameters based on the title hash
+      const yOffset = titleText.includes('Crystal-Clear') 
+        ? -70 + (titleHash % 20)  // Larger offset for Crystal-Clear (30-70px)
+        : 10 + (titleHash % 20); // Normal offset for others (10-30px)
+      const rotation = 1 + (titleHash % 15); // Random rotation between 1-16 degrees
+      const duration = 1.5 + (titleHash % 3.5); // Random duration between 1.5-5s
+      const delay = (titleHash % 2); // Random delay between 0-2s
+      
+      // Determine rotation direction based on title
+      const rotationDirection = titleHash % 2 === 0 ? 1 : -1;
+      
+      // Add scale animation only for Risk Snapshot
+      const shouldScale = titleText.includes('RISK');
+      const scaleAmount = shouldScale ? 0.10 : 0; // 5% scale variation
+
+      // Remove rotation for Crystal-Clear Stopout
+      const shouldRotate = !titleText.includes('Crystal-Clear');
+
+      console.log('Animation settings:', { // Debug log
+        titleText,
+        shouldScale,
+        shouldRotate,
+        yOffset,
+        rotation,
+        duration,
+        delay
+      });
+
+      // Create a continuous floating animation
+      const floatingAnimation = gsap.timeline({
+        repeat: -1,
+        yoyo: true,
+        delay: delay,
+      });
+
+      floatingAnimation
+        .to(contentRef.current, {
+          y: -yOffset,
+          rotation: shouldRotate ? rotation * rotationDirection : 0,
+          scale: shouldScale ? 1 + scaleAmount : 1,
+          duration: duration,
+          ease: "sine.inOut",
+        })
+        .to(contentRef.current, {
+          y: 0,
+          rotation: shouldRotate ? -rotation * rotationDirection : 0,
+          scale: shouldScale ? 1 - scaleAmount : 1,
+          duration: duration,
+          ease: "sine.inOut",
+        });
+
+      return () => {
+        floatingAnimation.kill();
+      };
+    }
+  }, [isImage, title]);
+
   return (
     <div className="relative size-full">
-      <video
-        src={src}
-        loop
-        muted
-        autoPlay
-        className="absolute left-0 top-0 size-full object-cover object-center"
-      />
+      {isImage ? (
+        <div ref={contentRef} className="absolute left-0 top-0 size-full">
+          <img
+            src={src}
+            alt={title}
+            className="size-full object-cover object-center opacity-50"
+          />
+        </div>
+      ) : (
+        <video
+          src={src}
+          loop
+          muted
+          autoPlay
+          className="absolute left-0 top-0 size-full object-cover object-center"
+        />
+      )}
       <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
         <div>
           <h1 className="bento-title special-font">{title}</h1>
@@ -99,85 +189,96 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
 };
 
 const Features = () => (
-  <section className="bg-black pb-52">
+  <section id="features" className="bg-black pb-52">
     <div className="container mx-auto px-3 md:px-10">
+    <Scroller/>
       <div className="px-5 py-32">
         <p className="font-circular-web text-lg text-blue-50">
-          Into the Metagame Layer
+          Key Trader is simply built different.
         </p>
         <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-          Immerse yourself in a rich and ever-expanding universe where a vibrant
-          array of products converge into an interconnected overlay experience
-          on your world.
+          Immerse yourself in a beautifully designed platform, where details matter, and the experience is second to none.
         </p>
       </div>
 
+   
+
       <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
         <BentoCard
-          src="videos/feature-1.mp4"
+          src="videos/platform_trade.mp4"
           title={
             <>
-              radia<b>n</b>t
+              Trade with Confi<b>n</b>ce
             </>
           }
-          description="A cross-platform metagame app, turning your activities across Web2 and Web3 games into a rewarding adventure."
+          description="Stability harbours confidence. Key Trader is specifically engineered to deliver experience you need to close your trades."
           isComingSoon
         />
       </BentoTilt>
 
+
+
       <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
         <BentoTilt className="bento-tilt_1 row-span-1 md:col-span-1 md:row-span-2">
           <BentoCard
-            src="videos/feature-2.mp4"
+            src="img/assets/astro.webp"
             title={
               <>
-                zig<b>m</b>a
+                RISK SN<b>A</b>PSHOT
               </>
             }
-            description="An anime and gaming-inspired NFT collection - the IP primed for expansion."
+            description="Know margin, SL/TP P&L, and liquidation price—before you even commit."
             isComingSoon
+            isImage={true}
           />
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_1 row-span-1 ms-32 md:col-span-1 md:ms-0">
           <BentoCard
-            src="videos/feature-3.mp4"
+            src="img/assets/yinyan.png"
             title={
               <>
-                n<b>e</b>xus
+                HYB<b>r</b>id M<b>a</b>rgin
               </>
             }
-            description="A gamified social hub, adding a new dimension of play to social interaction for Web3 communities."
+            description="Cross-meets-Isolated: one wallet, two styles—switch on demand."
             isComingSoon
+            isImage={true}
           />
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
           <BentoCard
-            src="videos/feature-4.mp4"
+            src="img/assets/stopout.png"
             title={
               <>
-                az<b>u</b>l
+                Crystal-Cle<b>a</b>r Stop<b>o</b>ut
               </>
             }
-            description="A cross-world AI Agent - elevating your gameplay to be more fun and productive."
+            description="See the exact liquidation price—before you ever click 'Buy'."
             isComingSoon
+            isImage={true}
           />
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_2">
-          <div className="flex size-full flex-col justify-between bg-violet-300 p-5">
-            <h1 className="bento-title special-font max-w-64 text-black">
-              M<b>o</b>re co<b>m</b>ing s<b>o</b>on.
+          <div className="flex size-full flex-col justify-between bg-[#082F6DFF] p-5">
+            <h1 className="bento-title special-font max-w-64 text-white">
+              With M<b>o</b>re Features on the horiz<b>o</b>n.
             </h1>
 
-            <TiLocationArrow className="m-5 scale-[5] self-end" />
+            {/* <TiLocationArrow className="m-5 scale-[5] self-end" /> */}
           </div>
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_2">
           <video
-            src="videos/feature-5.mp4"
+            ref={(el) => {
+              if (el) {
+                el.playbackRate = 0.5;
+              }
+            }}
+            src="videos/chart_studio.mp4"
             loop
             muted
             autoPlay
