@@ -30,7 +30,7 @@ const About = () => {
         borderRadius: 0,
       })
       .to(bgRef.current, {
-        backgroundColor: "rgba(17, 24, 39, 1)", // From transparent to full gray-900
+        backgroundColor: "rgba(0, 0, 0, 1)", // From transparent to full gray-900
         ease: "power1.inOut",
         duration: 1, // Explicitly set duration
       }, "<") // Start at the same time as the previous animation

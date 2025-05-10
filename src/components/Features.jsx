@@ -188,6 +188,45 @@ export const BentoCard = ({ src, title, description, isComingSoon, isImage = fal
   );
 };
 
+const PulsingBackgroundCard = () => {
+  const bgRef = useRef(null);
+
+  useEffect(() => {
+    if (bgRef.current) {
+      gsap.to(bgRef.current, {
+        scale: 0.8,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    }
+  }, []);
+
+  return (
+    <div className="relative flex size-full flex-col justify-between p-5 overflow-hidden">
+      <div
+        ref={bgRef}
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/img/assets/horizon2.png')" }}
+      />
+      {/* Top Heading */}
+      <div className="relative z-10">
+        <h1 className="bento-title special-font max-w-94 text-white text-center">
+          With M<b>o</b>re Features
+        </h1>
+      </div>
+      {/* Bottom Heading */}
+      <div className="relative z-10">
+        <h1 className="bento-title special-font max-w-54 text-white text-center">
+          on the horiz<b>o</b>n.
+        </h1>
+      </div>
+      {/* <TiLocationArrow className="m-5 scale-[5] self-end" /> */}
+    </div>
+  );
+};
+
 const Features = () => (
   <section id="features" className="bg-black pb-52">
     <div className="container mx-auto px-3 md:px-10">
@@ -208,7 +247,7 @@ const Features = () => (
           src="videos/platform_trade.mp4"
           title={
             <>
-              Trade with Confi<b>n</b>ce
+              Tr<b>a</b>de with C<b>o</b>nfid<b>e</b>nce
             </>
           }
           description="Stability harbours confidence. Key Trader is specifically engineered to deliver experience you need to close your trades."
@@ -262,13 +301,7 @@ const Features = () => (
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_2">
-          <div className="flex size-full flex-col justify-between bg-[#082F6DFF] p-5">
-            <h1 className="bento-title special-font max-w-64 text-white">
-              With M<b>o</b>re Features on the horiz<b>o</b>n.
-            </h1>
-
-            {/* <TiLocationArrow className="m-5 scale-[5] self-end" /> */}
-          </div>
+          <PulsingBackgroundCard />
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_2">
