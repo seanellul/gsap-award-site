@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, ScrollSmoother } from "../gsap/gsap-core";
+import { gsap, ScrollTrigger } from "../gsap/gsap-core";
 import "../styles/Scroller.css";
 
 // Register GSAP plugins explicitly to ensure they are recognized
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+gsap.registerPlugin(ScrollTrigger);
 
 const Scroller = () => {
   const wrapperRef = useRef(null);
