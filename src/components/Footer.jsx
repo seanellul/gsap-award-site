@@ -15,7 +15,7 @@ const Footer = () => {
           ©KeyTrader 2025. All rights reserved
         </p>
         <p className="text-sm font-light text-center">
-          Built by Divergent Studios.
+          Built by Divergent Labs.
         </p>
         <a
           href="#privacy-policy"
