@@ -9,6 +9,9 @@ export default {
         "circular-web": ["circular-web", "sans-serif"],
         "robert-medium": ["robert-medium", "sans-serif"],
         "robert-regular": ["robert-regular", "sans-serif"],
+        onest: ["onest", "sans-serif"],
+        "ibm-plex-mono": ["ibm-plex-mono", "sans-serif"],
+        "key-trader-font": ["onest", "sans-serif"],
       },
       colors: {
         blue: {

@@ -19,7 +19,6 @@ const Hero = () => {
   const totalVideos = isMobile ? 1 : 4; // Only load one video on mobile
   const nextVdRef = useRef(null);
 
-  // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -48,7 +47,9 @@ const Hero = () => {
   useGSAP(
     () => {
       if (hasClicked && !isMobile) {
+        // Set the initial visibility of the next video to visible
         gsap.set("#next-video", { visibility: "visible" });
+        // Animate the next video to scale up and fill the container
         gsap.to("#next-video", {
           transformOrigin: "center center",
           scale: 1,
@@ -56,8 +57,9 @@ const Hero = () => {
           height: "100%",
           duration: 1,
           ease: "power1.inOut",
-          onStart: () => nextVdRef.current?.play(),
+          onStart: () => nextVdRef.current?.play(), // Play the video when the animation starts
         });
+        // Animate the current video to scale down
         gsap.from("#current-video", {
           transformOrigin: "center center",
           scale: 0,
@@ -68,31 +70,34 @@ const Hero = () => {
     },
     {
       dependencies: [currentIndex, isMobile],
-      revertOnUpdate: true,
+      revertOnUpdate: true, // Revert animations when dependencies change
     }
   );
 
   useGSAP(() => {
     if (!isMobile) {
+      // Set the initial clipPath and borderRadius for the video frame
       gsap.set("#video-frame", {
         clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
         borderRadius: "0% 0% 40% 10%",
       });
+      // Animate the clipPath and borderRadius on scroll
       gsap.from("#video-frame", {
         clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
         borderRadius: "0% 0% 0% 0%",
         ease: "power1.inOut",
         scrollTrigger: {
-          trigger: "#video-frame",
-          start: "center center",
-          end: "bottom center",
-          scrub: true,
+          markers: true,
+          trigger: "#video-frame", // Element that triggers the animation
+          start: "center center", // Start the animation when the element is in the center of the viewport
+          end: "bottom center", // End the animation when the element reaches the bottom center of the viewport
+          scrub: true, // Smoothly animate the changes as the user scrolls
         },
       });
     }
   }, [isMobile]);
 
-  const getVideoSrc = (index) => `videos/hero-${index}.mp4`;
+  const getVideoSrc = (index) => `videos/hero-0.mp4`;
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-x-hidden">
@@ -145,7 +150,7 @@ const Hero = () => {
             />
           )}
           <video
-            src="videos/trading-bg.mp4"
+            src="videos/hero-0.mp4"
             autoPlay
             loop
             muted
